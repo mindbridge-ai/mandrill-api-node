@@ -10,9 +10,15 @@
   },
   "main": "mandrill",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "coffeescript": "^2.3.2",
+    "request": "^2.88.0"
+  },
   "optionalDependencies": {},
   "engines": {
     "node": "*"
+  },
+  "scripts": {
+    "build": "./node_modules/coffeescript/bin/coffee --compile --output . ."
   }
 }

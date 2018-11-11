@@ -1,5 +1,5 @@
 
-https = require 'https'
+request = require 'request'
 
 OPTS = {
     host:   'mandrillapp.com',
@@ -31,37 +31,28 @@ class exports.Mandrill
 
     call: (uri, params={}, onresult, onerror) ->
         params.key = @apikey
-        params = new Buffer(JSON.stringify(params), 'utf8')
+        OPTS.body = new Buffer(JSON.stringify(params), 'utf8')
 
-        if @debug then console.log("Mandrill: Opening request to https://#{OPTS.host}#{OPTS.prefix}#{uri}.json")
+        OPTS.uri = "https://#{OPTS.host}#{OPTS.prefix}#{uri}.json"
+        if @debug then console.log("Mandrill: Opening request to #{OPTS.uri}")
         OPTS.path = "#{OPTS.prefix}#{uri}.json"
-        OPTS.headers['Content-Length'] = params.length
-        req = https.request(OPTS, (res) =>
-            res.setEncoding('utf8')
-            json = ''
-            res.on('data', (d) =>
-                json += d
-            )
+        OPTS.headers['Content-Length'] = OPTS.body.length
+        req = request(OPTS, (err, res, body) =>
+            if (err)
+                if onerror then onerror(err) else @onerror({status: 'error', name: 'GeneralError', message: err})
+                return
 
-            res.on('end', =>
-                try
-                    json = JSON.parse(json)
-                catch e
-                    json = {status: 'error', name: 'GeneralError', message: e}
-                
-                json ?= {status: 'error', name: 'GeneralError', message: 'An unexpected error occurred'}
-                if res.statusCode != 200
-                    if onerror then onerror(json) else @onerror(json)
-                else
-                    if onresult then onresult(json)
-            )
-        )
-        req.write(params)
-        req.end()
-        req.on('error', (e) =>
-            if onerror then onerror(e) else @onerror({status: 'error', name: 'GeneralError', message: e})
-        )
+            try
+                json = JSON.parse(body)
+            catch e
+                json = {status: 'error', name: 'GeneralError', message: e}
 
+            json ?= {status: 'error', name: 'GeneralError', message: 'An unexpected error occurred'}
+            if res.statusCode != 200
+                if onerror then onerror(json) else @onerror(json)
+            else
+                if onresult then onresult(json)
+        )
         return null
 
     onerror: (err) ->

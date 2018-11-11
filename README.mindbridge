@@ -1,0 +1,9 @@
+Forked from https://bitbucket.org/mailchimp/mandrill-api-node to switch
+from `https` to `request` for proxy support.
+
+Latest release was 1.0.45.
+
+package.json says 1.0.42, I believe this is an error introduced by a pull
+request they merged after the 1.0.45 release, and can be ignored.
+
+Building: Edit the .coffee file and then `npm run build`.
